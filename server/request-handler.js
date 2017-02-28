@@ -12,6 +12,17 @@ this file and include it in basic-server.js so that it actually works.
 
 **************************************************************/
 
+/* Current plan is:
+We create a file that stores messages
+Point router to said file
+Upon GET request, pull file contents, put into object, stringify, then send stringified object.
+Upon POST request, get file, append POST'd object into file.
+*/
+
+var fs = require('fs');
+
+var ourMessage = '';
+
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
@@ -45,6 +56,17 @@ var requestHandler = function(request, response) {
   // which includes the status and all headers.
   response.writeHead(statusCode, headers);
 
+  fs.readFile('./server/messages.txt', 'utf-8', function(err, contents) {
+    if (err) throw err;
+    ourMessage = contents;
+  });
+
+  console.log(ourMessage);
+  console.log(typeof ourMessage === 'string');
+  console.log('File Read. Hopefully.');
+
+  var newMsg = 'hey a new msg';
+
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
   // response.end() will be the body of the response - i.e. what shows
@@ -52,7 +74,7 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end('Hello, World!');
+  response.end(ourMessage);
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
@@ -71,3 +93,5 @@ var defaultCorsHeaders = {
   'access-control-max-age': 10 // Seconds.
 };
 
+exports.handleRequest = requestHandler;
+exports.corsHeaders = defaultCorsHeaders;
