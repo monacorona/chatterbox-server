@@ -47,32 +47,16 @@ body {
 }
 
 form {
-    padding: 10px;
+    padding: 20px;
     padding-left: 0;
-    margin-top: 10px;
-
-    /*margin-bottom: 0px;*/
+    margin-bottom: 20px;
 }
 
 form input[type=text] {
     margin-right: 10px;
     width: 70%;
-    font-size: 14px;
+    font-size: 12px;
     padding: 5px;
-}
-
-form input[type=button],
-form input[type=submit] {
-    font-size: 30px;
-}
-
-
-form #newRoom {
-    width: 25%; 
-}
-
-select {
-    font-size: 16px;
 }
 
 .chat {
@@ -82,12 +66,7 @@ select {
 }
 
 .chat .username {
-    cursor: pointer;
     font-weight: 800;
-}
-
-.chat .username:hover {
-    background-color: #ddd;
 }
 
 .chat:hover {
@@ -107,9 +86,5 @@ select {
 .friend {
     color: #fff;
     background-color: #0090da;
-}
-
-.friendMessage {
-    font-weight: 800;
 }
 
