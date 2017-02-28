@@ -12,6 +12,22 @@ this file and include it in basic-server.js so that it actually works.
 
 **************************************************************/
 
+// These headers will allow Cross-Origin Resource Sharing (CORS).
+// This code allows this server to talk to websites that
+// are on different domains, for instance, your chat client.
+//
+// Your chat client is running from a url like file://your/chat/client/index.html,
+// which is considered a different domain.
+//
+// Another way to get around this restriction is to serve you chat
+// client from this domain by setting up static file serving.
+var defaultCorsHeaders = {
+  'access-control-allow-origin': '*',
+  'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'access-control-allow-headers': 'content-type, accept',
+  'access-control-max-age': 10 // Seconds.
+};
+
 /* Current plan is:
 We create a file that stores messages
 Point router to said file
@@ -21,7 +37,6 @@ Upon POST request, get file, append POST'd object into file.
 
 var fs = require('fs');
 
-var ourMessage = '';
 
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -56,16 +71,16 @@ var requestHandler = function(request, response) {
   // which includes the status and all headers.
   response.writeHead(statusCode, headers);
 
+  // ourMessage is an empty string that will hold the contents of the file
+  var ourMessage = '';
+
+  // Open up messages.txt which holds our message data
   fs.readFile('./server/messages.txt', 'utf-8', function(err, contents) {
-    if (err) throw err;
-    ourMessage = contents;
+    // If there is an error, throw the error
+    if (err) { throw err; }
+    // Else, respond with the contents of the file
+    response.end(contents);
   });
-
-  console.log(ourMessage);
-  console.log(typeof ourMessage === 'string');
-  console.log('File Read. Hopefully.');
-
-  var newMsg = 'hey a new msg';
 
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
@@ -74,23 +89,7 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end(ourMessage);
-};
-
-// These headers will allow Cross-Origin Resource Sharing (CORS).
-// This code allows this server to talk to websites that
-// are on different domains, for instance, your chat client.
-//
-// Your chat client is running from a url like file://your/chat/client/index.html,
-// which is considered a different domain.
-//
-// Another way to get around this restriction is to serve you chat
-// client from this domain by setting up static file serving.
-var defaultCorsHeaders = {
-  'access-control-allow-origin': '*',
-  'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'access-control-allow-headers': 'content-type, accept',
-  'access-control-max-age': 10 // Seconds.
+  //response.end(ourMessage);
 };
 
 exports.handleRequest = requestHandler;
