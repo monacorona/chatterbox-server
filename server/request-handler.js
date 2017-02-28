@@ -36,7 +36,50 @@ Upon POST request, get file, append POST'd object into file.
 */
 
 var fs = require('fs');
+var obj = {a: 1, b: 'hello'};
 
+var serveMsgs = function (response) {
+    // ourMessage is an empty string that will hold the contents of the file
+  var ourMessage = '';
+
+  // Open up messages.txt which holds our message data
+  fs.readFile('./server/messages.txt', 'utf-8', function(err, contents) {
+    // If there is an error, throw the error
+    if (err) { throw err; }
+    // Else, respond with the contents of the file
+    ourMessage = contents.split('\n');
+  });
+  for (var i = 0; i < ourMessage.length; i++) {
+    ourMessage[i] = JSON.parse(ourMessage[i]);
+  }
+  console.log(ourMessage);
+  ourMessage = JSON.stringify(ourMessage);
+  console.log(ourMessage);
+  response.end(ourMessage);
+};
+
+var writeMsgs = function (obj, request, response) {
+  var string = JSON.stringify(obj);
+  string += '\n';
+  fs.appendFile('./server/messages.txt', string, 'utf-8', function(err) {
+    if (err) { throw err; }
+    response.end();
+    console.log('The ' + string + 'has been appended to the file');
+  });
+};
+
+var parseMessage = function (request, response) {
+  var jsonString = '';
+
+  request.on('data', function (data) {
+    jsonString += data;
+  });
+
+  request.on('end', function () {
+    console.log(jsonString);
+    console.log(JSON.parse(jsonString));
+  });
+};
 
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -54,7 +97,6 @@ var requestHandler = function(request, response) {
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
-
   // The outgoing status.
   var statusCode = 200;
 
@@ -65,23 +107,19 @@ var requestHandler = function(request, response) {
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = 'text/plain';
+  headers['Content-Type'] = 'application/JSON';
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
   response.writeHead(statusCode, headers);
 
-  // ourMessage is an empty string that will hold the contents of the file
-  var ourMessage = '';
-
-  // Open up messages.txt which holds our message data
-  fs.readFile('./server/messages.txt', 'utf-8', function(err, contents) {
-    // If there is an error, throw the error
-    if (err) { throw err; }
-    // Else, respond with the contents of the file
-    response.end(contents);
-  });
-
+  if (request.method === 'GET') {
+    serveMsgs(response);
+  } else if (request.method === 'POST') {
+    console.log('Else');
+    writeMsgs(obj, request, response);
+    //parseMessage(request, response);
+  }
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
   // response.end() will be the body of the response - i.e. what shows
@@ -91,6 +129,7 @@ var requestHandler = function(request, response) {
   // node to actually send all the data over to the client.
   //response.end(ourMessage);
 };
+
 
 exports.handleRequest = requestHandler;
 exports.corsHeaders = defaultCorsHeaders;
